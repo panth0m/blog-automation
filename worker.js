@@ -74,7 +74,7 @@ export default {
       const r = await env.DB.prepare("INSERT INTO jobs(account,topic,keyword,post_text,scheduled_at,status,created_at) VALUES(?,?,?,?,?,'draft',?)").bind(b.account,b.topic,b.keyword,b.post_text,b.scheduled_at || null,new Date().toISOString()).run();
       return json({id:r.meta.last_row_id,status:"draft"},201);
     }
-    const m = url.pathname.match(/^/admin/jobs/(d+)/approve$/);
+    const m = url.pathname.match(/^\/admin\/jobs\/(\d+)\/approve$/);
     if (request.method === "POST" && m) { await env.DB.prepare("UPDATE jobs SET status='approved', error=NULL WHERE id=? AND status='draft'").bind(m[1]).run(); return json({id:Number(m[1]),status:"approved"}); }
     if (request.method === "POST" && url.pathname === "/admin/publish-due") return json({results:await publishDue(env)});
     return json({error:"Not found"},404);
