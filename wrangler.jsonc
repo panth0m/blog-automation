@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "blog-automation",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-14",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "blog-automation",
+      "database_id": "c1789f87-218f-482f-b9eb-55f8419b24ba"
+    }
+  ],
+  "triggers": {
+    "crons": ["*/10 * * * *"]
+  }
+}
