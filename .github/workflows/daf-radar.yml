@@ -1,0 +1,39 @@
+name: 키워드 레이더
+
+on:
+  schedule:
+    - cron: "17 19 * * *" # 매일 새벽 4시 17분 (한국 시간)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daf-radar
+  cancel-in-progress: false
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 레이더 계산
+        env:
+          NAVER_AD_API_KEY: ${{ secrets.NAVER_AD_API_KEY }}
+          NAVER_AD_SECRET: ${{ secrets.NAVER_AD_SECRET }}
+          NAVER_AD_CUSTOMER_ID: ${{ secrets.NAVER_AD_CUSTOMER_ID }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+        run: python daf-lite/radar/radar.py --out out
+      # 결과는 커밋하지 않고 'radar-latest' 릴리스 파일로 올린다 (워커 배포를 건드리지 않게)
+      - name: 결과 올리기
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view radar-latest >/dev/null 2>&1 || \
+            gh release create radar-latest --title "키워드 레이더 최신 결과" --notes "매일 새벽 자동으로 갱신돼요." --latest=false
+          gh release upload radar-latest out/radar.json --clobber
